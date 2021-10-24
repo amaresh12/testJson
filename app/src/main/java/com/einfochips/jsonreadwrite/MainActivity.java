@@ -14,13 +14,20 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     Button btCreate,btCreateTwo,btUpdate,btDelete,btAdd;
     TextView tvPrintOne, tvPrintTwo,printResult;
     JsonArray jsonArrayOne,jsonArrayTwo , jsonResultArray;
+    private static String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,17 +73,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void removeOneFromTwo() {
         Gson gson = new Gson();
-        ArrayList<Data> jsonArrayListOne = gson.fromJson(jsonArrayOne, ArrayList.class);
-        ArrayList<Data> jsonArrayListTwo = gson.fromJson(jsonArrayTwo, ArrayList.class);
-        ArrayList<Data> jsonArrayListResult = gson.fromJson(jsonArrayTwo,ArrayList.class);
-        for(Data data : jsonArrayListTwo){
-            for(Data data1 : jsonArrayListOne){
-                if(data.equals(data1))
-                jsonArrayListResult.remove(data);
+        JsonArray jsonArrayListResult = jsonArrayTwo;
+        for(int i = 0 ; i < jsonArrayTwo.size() ; i++){
+            Log.e(TAG,"jsonArrayTwo ::"+i);
+            for(int j = 0 ; j < jsonArrayOne.size() ; j++){
+                if(jsonArrayTwo.get(i).equals(jsonArrayOne.get(j))){
+                    Log.e(TAG,"jsonArrayOne ::"+j);
+                    Log.e(TAG,"removed pos  ::"+i);
+                    jsonArrayListResult.remove(i);
+                }
             }
         }
-        Log.e("JSON",""+jsonArrayListResult.toString());
-
+        printResult.setText(jsonArrayListResult.toString());
     }
 
     private void addTwo() {
@@ -84,7 +92,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (jsonArrayOne != null && jsonArrayTwo != null) {
             jsonResultArray.addAll(jsonArrayOne);
             jsonResultArray.addAll(jsonArrayTwo);
-            printResult.setText(jsonResultArray.toString());
+
+            // printResult.setText(jsonResultArray.toString());
+            // remove duplicate
+            List<Data> yourList = new Gson().fromJson(jsonResultArray, ArrayList.class);
+            Set<Data> set = new HashSet<>(yourList);
+            yourList.clear();
+            yourList.addAll(set);
+            JsonArray addJsonArray = new Gson().toJsonTree(yourList).getAsJsonArray();
+            printResult.setText(addJsonArray.toString());
         }
         else{
             printResult.setText("One or more array is null");
@@ -103,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             item.addProperty("phone",data.phone);
             jsonArrayTwo.add(item);
         }
-        Log.e("JSON",""+jsonArrayTwo.toString());
+        Log.e(TAG,""+jsonArrayTwo.toString());
         tvPrintTwo.setText(jsonArrayTwo.toString());
     }
 
@@ -118,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             item.addProperty("phone",data.phone);
             jsonArrayOne.add(item);
         }
-        Log.e("JSON",""+jsonArrayOne.toString());
+        Log.e(TAG,""+jsonArrayOne.toString());
         tvPrintOne.setText(jsonArrayOne.toString());
     }
 }
